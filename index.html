@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContactMimic: Contact Conditioning Enables Task-Contextual Humanoid Object Interaction</title>
+<meta name="description" content="ContactMimic: contact-conditioned imitation learning for humanoid loco-manipulation.">
+<link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <h1 class="title">ContactMimic</h1>
+    <p class="subtitle">Contact Conditioning Enables Task-Contextual<br>Humanoid Object Interaction</p>
+
+    <p class="authors"><em>Anonymous Authors</em></p>
+    <p class="affiliation"><em>Paper under double-blind review at CoRL 2026</em></p>
+
+    <nav class="links">
+      <a class="btn disabled" aria-disabled="true">Paper (anonymized)</a>
+      <a class="btn disabled" aria-disabled="true">Code (anonymized)</a>
+      <a class="btn disabled" aria-disabled="true">Video (anonymized)</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section id="teaser">
+    <figure>
+      <img src="static/images/teaser_placeholder.svg" alt="ContactMimic teaser figure placeholder">
+      <figcaption>
+        A single contact-conditioned policy is trained on paired motion data
+        (default contact and an augmented no-contact counterpart),
+        enabling the same policy to controllably produce or suppress contact
+        at evaluation time by switching the conditioning label.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="abstract">
+    <h2>Abstract</h2>
+    <p>
+      Recent advances in humanoid whole-body motion tracking enable robots
+      to reproduce human-like poses by following reference keypoint
+      trajectories. However, keypoint tracking alone is insufficient for
+      object interaction tasks such as sitting on a chair, wiping a board,
+      or pushing furniture, where the robot can reach the correct pose
+      without ever making meaningful physical contact with the object. We
+      present <strong>ContactMimic</strong>, a contact-conditioned
+      imitation learning framework that augments keypoint tracking with
+      explicit binary contact labels as a conditioning signal. Our key
+      insight is to train a single policy on paired motion data (a default
+      trajectory with intended contact and an augmented counterpart where
+      target contacts are suppressed via collision-geometry inflation),
+      combined with train-time contact-label augmentations. The resulting
+      policy decouples contact behavior from keypoint geometry, enabling
+      it to both achieve precise physical contact and controllably produce
+      or suppress contact by switching the conditioning label at
+      evaluation time. We demonstrate controllable contact in simulation
+      across 11 diverse human-object interaction motions, and validate
+      sim-to-real transfer on the Unitree G1 robot across 5 motions.
+    </p>
+  </section>
+
+  <section id="overview">
+    <h2>Method Overview</h2>
+    <p>
+      Our pipeline turns a human-object interaction motion capture clip
+      into a contact-aware humanoid policy in three stages:
+    </p>
+    <ol>
+      <li>
+        <strong>Retargeting.</strong> A motion clip is retargeted to the
+        G1 humanoid, producing a reference keypoint trajectory and
+        per-body reference contact labels against the object.
+      </li>
+      <li>
+        <strong>Paired motion generation.</strong> For each clip we
+        synthesize an augmented counterpart by inflating the collision
+        geometry of the target object part(s), yielding two trajectories
+        with similar keypoint structure but opposite target contact
+        labels.
+      </li>
+      <li>
+        <strong>Contact-aware RL training.</strong> A single
+        contact-conditioned policy is trained on the paired trajectories,
+        supervised by keypoint-tracking rewards plus a contact-label
+        matching reward and a contact-distance reward.
+      </li>
+    </ol>
+    <figure>
+      <img src="static/images/method_placeholder.svg" alt="Method pipeline placeholder">
+      <figcaption>Pipeline overview.</figcaption>
+    </figure>
+  </section>
+
+  <section id="results">
+    <h2>Results</h2>
+
+    <h3>Contact controllability</h3>
+    <p>
+      The same policy produces or suppresses contact depending on the
+      conditioning label, even when the keypoint reference is held fixed.
+    </p>
+    <div class="video-grid">
+      <figure>
+        <video controls muted playsinline preload="metadata" poster="static/images/poster_placeholder.svg">
+          <source src="static/videos/sim_label_yes_placeholder.mp4" type="video/mp4">
+        </video>
+        <figcaption>Label = <strong>YES</strong></figcaption>
+      </figure>
+      <figure>
+        <video controls muted playsinline preload="metadata" poster="static/images/poster_placeholder.svg">
+          <source src="static/videos/sim_label_no_placeholder.mp4" type="video/mp4">
+        </video>
+        <figcaption>Label = <strong>NO</strong> (same keypoints)</figcaption>
+      </figure>
+    </div>
+
+    <h3>Real-world deployment</h3>
+    <p>
+      Label-following behavior transfers to a Unitree G1 humanoid robot
+      across five motions.
+    </p>
+    <div class="video-grid">
+      <figure>
+        <video controls muted playsinline preload="metadata" poster="static/images/poster_placeholder.svg">
+          <source src="static/videos/real_placeholder.mp4" type="video/mp4">
+        </video>
+        <figcaption>Wipe whiteboard, sit on chair, lean on backrest, sit vs.\ squat.</figcaption>
+      </figure>
+    </div>
+
+    <h3>Necessity of contact conditioning</h3>
+    <p>
+      A keypoint-only baseline (BeyondMimic) tracks pose accurately but
+      fails to establish meaningful physical contact, validating that
+      keypoint tracking alone is an incomplete task specification.
+    </p>
+  </section>
+
+  <section id="bibtex">
+    <h2>BibTeX</h2>
+    <pre><code>@inproceedings{contactmimic2026,
+  title     = {ContactMimic: Contact Conditioning Enables Task-Contextual Humanoid Object Interaction},
+  author    = {Anonymous Authors},
+  booktitle = {Conference on Robot Learning (CoRL)},
+  year      = {2026},
+  note      = {Under double-blind review}
+}</code></pre>
+  </section>
+
+</main>
+
+<footer>
+  <p>Anonymous submission. Page intentionally omits author and institutional information.</p>
+</footer>
+
+</body>
+</html>
