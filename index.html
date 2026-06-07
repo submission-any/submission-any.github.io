@@ -3,160 +3,271 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ContactMimic: Contact Conditioning Enables Task-Contextual Humanoid Object Interaction</title>
-<meta name="description" content="ContactMimic: contact-conditioned imitation learning for humanoid loco-manipulation.">
+<title>ContactMimic: Humanoid Object Interaction via Contact Control</title>
+<meta name="description" content="ContactMimic augments humanoid keypoint tracking with an explicit, test-time controllable contact command, enabling a single policy to produce or suppress physical contact on demand. CoRL 2026 anonymous submission.">
+<meta property="og:title" content="ContactMimic: Humanoid Object Interaction via Contact Control">
+<meta property="og:description" content="Explicit contact control for humanoid object interaction on a real Unitree G1.">
+<meta property="og:image" content="static/images/main_poster.jpg">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
 
+<!-- ===================== HERO ===================== -->
 <header class="hero">
   <div class="container">
+    <p class="venue">Anonymous submission &middot; under double-blind review at CoRL 2026</p>
     <h1 class="title">ContactMimic</h1>
-    <p class="subtitle">Contact Conditioning Enables Task-Contextual<br>Humanoid Object Interaction</p>
+    <p class="subtitle">Humanoid Object Interaction via Contact Control</p>
 
     <p class="authors"><em>Anonymous Authors</em></p>
-    <p class="affiliation"><em>Paper under double-blind review at CoRL 2026</em></p>
 
     <nav class="links">
-      <a class="btn disabled" aria-disabled="true">Paper (anonymized)</a>
-      <a class="btn disabled" aria-disabled="true">Code (anonymized)</a>
-      <a class="btn disabled" aria-disabled="true">Video (anonymized)</a>
+      <a class="btn" href="#video"><i class="fas fa-play"></i>&nbsp;Video</a>
+      <a class="btn" href="static/pdf/appendix.pdf" target="_blank" rel="noopener"><i class="fas fa-file-pdf"></i>&nbsp;Appendix (PDF)</a>
+      <a class="btn disabled" aria-disabled="true" title="Anonymized for double-blind review"><i class="fas fa-file-lines"></i>&nbsp;Paper (anonymized)</a>
+      <a class="btn disabled" aria-disabled="true" title="Anonymized for double-blind review"><i class="fab fa-github"></i>&nbsp;Code (anonymized)</a>
     </nav>
   </div>
 </header>
 
+<!-- ===================== CONTENTS ===================== -->
+<!-- Floating side panel (shown on wide screens) -->
+<aside class="toc-float" aria-label="Contents">
+  <span class="toc-float-title">Contents</span>
+  <a href="#abstract">Abstract</a>
+  <a href="#video">Video</a>
+  <a href="#method">Method</a>
+  <a href="#real">Real-World Contact Control</a>
+  <a href="#sim">Simulation</a>
+  <a href="#baseline">Necessity</a>
+  <a href="#probe">Proprioception</a>
+  <a href="#bibtex">BibTeX</a>
+</aside>
+<!-- Inline fallback (shown on narrow screens) -->
+<nav class="contents" aria-label="Contents">
+  <span class="contents-title">Contents</span>
+  <a href="#abstract">Abstract</a>
+  <a href="#video">Video</a>
+  <a href="#method">Method</a>
+  <a href="#real">Real-World Contact Control</a>
+  <a href="#sim">Simulation</a>
+  <a href="#baseline">Necessity</a>
+  <a href="#probe">Proprioception</a>
+  <a href="#bibtex">BibTeX</a>
+</nav>
+
 <main class="container">
 
-  <section id="teaser">
+  <!-- ===================== ABSTRACT ===================== -->
+  <section id="abstract">
+    <h2>Abstract</h2>
+    <p>
+      Keypoint tracking alone is insufficient for object interaction tasks such as sitting on a chair,
+      wiping a board, or pushing furniture, where the robot can reach the correct pose without making
+      meaningful physical contact with the object. We present <strong>ContactMimic</strong>, a learning
+      framework that tracks explicit part-level binary contact commands alongside keypoint trajectories.
+      ContactMimic is made possible through the use of <em>contact-following rewards</em> and a
+      <em>trajectory augmentation scheme</em> aimed at breaking the correlations between keypoint
+      trajectories and contact labels. The resulting policy successfully decouples contact behavior from
+      keypoint geometry, and achieves precise physical contact as well as <em>contact-controllability</em>
+      (produce or suppress contact during deployment as desired). Simulation experiments across 10 diverse
+      human&ndash;object interaction motions confirm that ContactMimic exhibits contact controllability that
+      enables it to complete manipulation tasks without task-specific rewards, while also outperforming
+      keypoint-only trackers on contact-relevant tasks. Ablations confirm the necessity of the proposed
+      trajectory augmentation scheme, and sim-to-real deployment validates contact controllability in the
+      real world across 5 different motions.
+    </p>
+    <p class="keywords"><strong>Keywords:</strong> Humanoid Loco-Manipulation &middot; Motion Tracking &middot; Contact Modeling</p>
+  </section>
+
+  <!-- ===================== MAIN VIDEO ===================== -->
+  <section id="video">
+    <h2>Overview Video</h2>
+    <div class="video-frame">
+      <video controls playsinline preload="none" poster="static/images/main_poster.jpg">
+        <source src="static/videos/main_video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <p class="cap">Supplementary video: method overview and real-world contact-controllability results on the Unitree&nbsp;G1.</p>
+  </section>
+
+  <!-- ===================== METHOD ===================== -->
+  <section id="method">
+    <h2>Method</h2>
+    <p>
+      ContactMimic is a contact-conditioned keypoint tracker
+      <span class="nowrap">&pi;<sub>&theta;</sub>(<strong>a</strong><sub>t</sub> | <strong>p</strong><sub>t</sub>, <span class="bar">k</span><sub>t</sub>, <span class="bar">c</span><sub>t</sub>)</span>
+      that takes as input proprioception, reference keypoint targets, and a <strong>binary per-body contact label</strong>
+      over contact-capable bodies (pelvis, torso, hips, knees, ankles, shoulders, wrists). The added contact channel
+      disambiguates tasks that share the same pose &mdash; wiping vs.&nbsp;waving, sitting vs.&nbsp;squatting &mdash; and provides
+      fine-grained control, e.g.&nbsp;sit in a chair <em>without</em> leaning on the back.
+    </p>
+    <figure class="pipeline">
+      <img src="static/images/pipeline.png" alt="ContactMimic pipeline: Stage 1 contact-conditioned retargeting and augmentation; Stage 2 contact-aware policy training and deployment with test-time contact toggling.">
+    </figure>
+
+    <div class="cards">
+      <div class="card">
+        <h3><i class="fas fa-bullseye"></i> Contact-aware rewards</h3>
+        <p>
+          Alongside standard tracking and regularization rewards, two contact-following terms compare the reference
+          contact label to the <em>actual</em> body-part&ndash;object-part contact state:
+        </p>
+        <ul>
+          <li><strong>Contact-label matching</strong> &mdash; balanced accuracy of true/false contacts (a TP&minus;FP variant is used for sparse-contact motions).</li>
+          <li><strong>Contact distance</strong> &mdash; pulls parts that <em>should</em> contact toward the surface and pushes parts that should <em>not</em> contact away.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><i class="fas fa-shuffle"></i> Breaking keypoint&ndash;contact correlation</h3>
+        <p>
+          In raw human&ndash;object data, a motion usually appears with only one contact pattern, so a policy can ignore
+          the command and infer contact from keypoints. We generate <strong>paired motions</strong> that share keypoint
+          structure but differ in contact via three composable augmentations:
+        </p>
+        <ul>
+          <li><strong>&#9312; Contact-label flipping</strong> &mdash; keep the trajectory, flip task-relevant labels.</li>
+          <li><strong>&#9313; Object removal</strong> &mdash; remove the object, zero the labels, keep the keypoints.</li>
+          <li><strong>&#9314; Inflated geometry</strong> &mdash; inflate the target collision mesh so the retargeter routes around it.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== REAL-WORLD CONTACT CONTROL ===================== -->
+  <section id="real" class="wide-section">
+    <div class="container-wide">
+      <h2>Contact Control Transfers to the Real World</h2>
+      <p class="section-lead">
+        We replicate the contact-controllability study on hardware. For each motion we deploy the policy with the
+        <strong>same keypoint trajectory</strong> but toggle the contact command from
+        <span class="badge yes">contact&nbsp;&#10004;</span> to <span class="badge no">contact&nbsp;&#10008;</span>.
+        When commanded to make contact, the policy commits to the physical interaction; when commanded to suppress it,
+        the policy follows a similar pose while staying just off the surface. For the
+        <em>lean-on-backrest</em> motions we additionally vary whether the reference keypoints are
+        <strong>near</strong> or <strong>far</strong> from the object, giving the full
+        <span class="nowrap">near/far &times; &#10004;/&#10008;</span> controllability grid. Every condition shows all 5 real-robot trials.
+      </p>
+
+      <!-- Real-world success-rate table -->
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Real-world success rates: a trial succeeds when the robot's physical contact behavior matches the contact command.</caption>
+          <thead>
+            <tr><th>Motion</th><th>Success criterion</th><th class="num">contact&nbsp;&#10004;</th><th class="num">contact&nbsp;&#10008;</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Wipe whiteboard</td><td>Hand contact leaves a visible trace &hArr; contact&nbsp;&#10004;</td><td class="num">5/5</td><td class="num">5/5</td></tr>
+            <tr><td>Sit in front of table</td><td>Full seat contact + hands on table &hArr; contact&nbsp;&#10004;</td><td class="num">4/5</td><td class="num">5/5</td></tr>
+            <tr><td>Lean on backrest I</td><td>Sustained torso&ndash;backrest contact &hArr; contact&nbsp;&#10004;</td><td class="num">9/10</td><td class="num">10/10</td></tr>
+            <tr><td>Lean on backrest II</td><td>Sustained torso&ndash;backrest contact &hArr; contact&nbsp;&#10004;</td><td class="num">10/10</td><td class="num">9/10</td></tr>
+            <tr><td>Sit and squat</td><td>Seated posture &hArr; contact&nbsp;&#10004;, else squat posture</td><td class="num">5/5</td><td class="num">5/5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- JS renders the per-task video galleries here -->
+      <div id="real-gallery" class="real-gallery"></div>
+    </div>
+  </section>
+
+  <!-- ===================== SIMULATION ===================== -->
+  <section id="sim">
+    <h2>Contact Control Works in Simulation</h2>
+    <p>
+      For the same keypoint trajectory, we command the policy to make task-relevant contact
+      (<span class="mono">&tau;<sup>&#10004;</sup></span>) or not (<span class="mono">&tau;<sup>&#10008;</sup></span>), on
+      both <em>near</em> keypoints (original HUMOTO trajectories) and <em>far</em> keypoints (inflated away from the
+      surface). Across all four trajectory sets, the number of contacts, contact impulse, and key-joint torque all move
+      as commanded when contact is toggled off.
+    </p>
     <figure>
-      <img src="static/images/teaser_placeholder.svg" alt="ContactMimic teaser figure placeholder">
+      <img src="static/images/controllability.png" alt="Per-motion contact-controllability arrows: contact metrics drop when the contact command is turned off, for both near and far keypoints.">
       <figcaption>
-        A single contact-conditioned policy is trained on paired motion data
-        (default contact and an augmented no-contact counterpart),
-        enabling the same policy to controllably produce or suppress contact
-        at evaluation time by switching the conditioning label.
+        Per-motion contact controllability. <span style="color:#b2182b;font-weight:600">Red arrows</span>
+        (near keypoints, &#10004;&rarr;&#10008;) and <span style="color:#2166ac;font-weight:600">blue arrows</span>
+        (far keypoints, &#10004;&rarr;&#10008;) show contact metrics dropping when the contact command is turned off.
+        The rightmost panel shows key-joint torque changing as expected.
+      </figcaption>
+    </figure>
+    <figure>
+      <img class="med" src="static/images/box.png" alt="Box-lifting motion in simulation: with contact off the box is left untouched; with contact on the robot grasps and lifts it.">
+      <figcaption>
+        Box lifting in simulation. With <span class="badge no">contact&nbsp;&#10008;</span> the same keypoints are tracked
+        but the box is left untouched; with <span class="badge yes">contact&nbsp;&#10004;</span> the robot grasps and lifts
+        it &mdash; loco-manipulation with no task-specific rewards.
       </figcaption>
     </figure>
   </section>
 
-  <section id="abstract">
-    <h2>Abstract</h2>
-    <p>
-      Recent advances in humanoid whole-body motion tracking enable robots
-      to reproduce human-like poses by following reference keypoint
-      trajectories. However, keypoint tracking alone is insufficient for
-      object interaction tasks such as sitting on a chair, wiping a board,
-      or pushing furniture, where the robot can reach the correct pose
-      without ever making meaningful physical contact with the object. We
-      present <strong>ContactMimic</strong>, a contact-conditioned
-      imitation learning framework that augments keypoint tracking with
-      explicit binary contact labels as a conditioning signal. Our key
-      insight is to train a single policy on paired motion data (a default
-      trajectory with intended contact and an augmented counterpart where
-      target contacts are suppressed via collision-geometry inflation),
-      combined with train-time contact-label augmentations. The resulting
-      policy decouples contact behavior from keypoint geometry, enabling
-      it to both achieve precise physical contact and controllably produce
-      or suppress contact by switching the conditioning label at
-      evaluation time. We demonstrate controllable contact in simulation
-      across 11 diverse human-object interaction motions, and validate
-      sim-to-real transfer on the Unitree G1 robot across 5 motions.
-    </p>
-  </section>
+  <!-- ===================== NECESSITY / BASELINE ===================== -->
+  <section id="baseline" class="wide-section">
+    <div class="container-wide">
+      <h2>Keypoint Control Alone Is Insufficient</h2>
+      <p class="section-lead">
+        Compared against <strong>BeyondMimic</strong>, a state-of-the-art keypoint-only tracker, ContactMimic achieves
+        substantially higher contact metrics at <em>comparable</em> tracking accuracy (MPJPE) &mdash; and, for free-object
+        motions, actually moves the object. Keypoint tracking alone is an incomplete task specification.
+      </p>
 
-  <section id="overview">
-    <h2>Method Overview</h2>
-    <p>
-      Our pipeline turns a human-object interaction motion capture clip
-      into a contact-aware humanoid policy in three stages:
-    </p>
-    <ol>
-      <li>
-        <strong>Retargeting.</strong> A motion clip is retargeted to the
-        G1 humanoid, producing a reference keypoint trajectory and
-        per-body reference contact labels against the object.
-      </li>
-      <li>
-        <strong>Paired motion generation.</strong> For each clip we
-        synthesize an augmented counterpart by inflating the collision
-        geometry of the target object part(s), yielding two trajectories
-        with similar keypoint structure but opposite target contact
-        labels.
-      </li>
-      <li>
-        <strong>Contact-aware RL training.</strong> A single
-        contact-conditioned policy is trained on the paired trajectories,
-        supervised by keypoint-tracking rewards plus a contact-label
-        matching reward and a contact-distance reward.
-      </li>
-    </ol>
-    <figure>
-      <img src="static/images/method_placeholder.svg" alt="Method pipeline placeholder">
-      <figcaption>Pipeline overview.</figcaption>
-    </figure>
-  </section>
-
-  <section id="results">
-    <h2>Results</h2>
-
-    <h3>Contact controllability</h3>
-    <p>
-      The same policy produces or suppresses contact depending on the
-      conditioning label, even when the keypoint reference is held fixed.
-    </p>
-    <div class="video-grid">
+      <h3 class="sub">Our data augmentation scheme is important</h3>
       <figure>
-        <video controls muted playsinline preload="metadata" poster="static/images/poster_placeholder.svg">
-          <source src="static/videos/sim_label_yes_placeholder.mp4" type="video/mp4">
-        </video>
-        <figcaption>Label = <strong>YES</strong></figcaption>
-      </figure>
-      <figure>
-        <video controls muted playsinline preload="metadata" poster="static/images/poster_placeholder.svg">
-          <source src="static/videos/sim_label_no_placeholder.mp4" type="video/mp4">
-        </video>
-        <figcaption>Label = <strong>NO</strong> (same keypoints)</figcaption>
+        <img class="med" src="static/images/ablation.png" alt="Ablation: removing the proposed data augmentation hurts contact controllability.">
+        <figcaption>
+          Removing the proposed augmentation hurts contact controllability. <span style="color:#b2182b;font-weight:600">Solid arrows</span>
+          (full method) are more consistently long and leftward (contacts reduce when commanded off) than the
+          <span style="color:#b2182b;font-weight:600">dotted arrows</span> (no augmentation). The policy input and reward alone are
+          not enough &mdash; the training data must be engineered to break the keypoint&ndash;contact correlation.
+        </figcaption>
       </figure>
     </div>
+  </section>
 
-    <h3>Real-world deployment</h3>
+  <!-- ===================== PROPRIOCEPTION PROBE ===================== -->
+  <section id="probe">
+    <h2>Policy Representations Encode Runtime Contact State</h2>
     <p>
-      Label-following behavior transfers to a Unitree G1 humanoid robot
-      across five motions.
-    </p>
-    <div class="video-grid">
-      <figure>
-        <video controls muted playsinline preload="metadata" poster="static/images/poster_placeholder.svg">
-          <source src="static/videos/real_placeholder.mp4" type="video/mp4">
-        </video>
-        <figcaption>Wipe whiteboard, sit on chair, lean on backrest, sit vs.\ squat.</figcaption>
-      </figure>
-    </div>
-
-    <h3>Necessity of contact conditioning</h3>
-    <p>
-      A keypoint-only baseline (BeyondMimic) tracks pose accurately but
-      fails to establish meaningful physical contact, validating that
-      keypoint tracking alone is an incomplete task specification.
+      We deliberately do <em>not</em> feed runtime contact sensing to the policy, reasoning that contact state can be
+      inferred from proprioception. A simple linear probe on the policy's inputs and intermediate representations
+      recovers the runtime contact state with high accuracy &mdash; well above chance &mdash; confirming that
+      the policy maintains an internal sense of its actual contact state from proprioception alone.
     </p>
   </section>
 
+  <!-- ===================== BIBTEX ===================== -->
   <section id="bibtex">
     <h2>BibTeX</h2>
-    <pre><code>@inproceedings{contactmimic2026,
-  title     = {ContactMimic: Contact Conditioning Enables Task-Contextual Humanoid Object Interaction},
+    <div class="bibtex-box">
+      <button class="copy-btn" id="copyBib" title="Copy to clipboard"><i class="fas fa-copy"></i> Copy</button>
+      <pre><code id="bibtex-code">@inproceedings{contactmimic2026,
+  title     = {ContactMimic: Humanoid Object Interaction via Contact Control},
   author    = {Anonymous Authors},
   booktitle = {Conference on Robot Learning (CoRL)},
   year      = {2026},
   note      = {Under double-blind review}
 }</code></pre>
+    </div>
   </section>
 
 </main>
 
 <footer>
-  <p>Anonymous submission. Page intentionally omits author and institutional information.</p>
+  <div class="container">
+    <p>Anonymous submission &middot; this page intentionally omits author and institutional information.</p>
+    <p class="muted">Website design adapted from the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank" rel="noopener">Academic Project Page Template</a>.</p>
+  </div>
 </footer>
 
+<button id="toTop" class="to-top" title="Back to top" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>
+
+<script src="static/js/real_manifest.js"></script>
+<script src="static/js/main.js"></script>
 </body>
 </html>
